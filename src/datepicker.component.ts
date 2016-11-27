@@ -35,7 +35,7 @@ interface ValidationResult {
     ])
   ],
   styles: [
-    `.datepicker {
+    `.angular2-material-datepicker {
         position: relative;
         display: inline-block;
         color: #2b2b2b;
@@ -203,7 +203,7 @@ interface ValidationResult {
   ],
   template: `
     <div
-      class="datepicker"
+      class="angular2-material-datepicker"
       [ngStyle]="{'font-family': fontFamily}"
     >
       <input
