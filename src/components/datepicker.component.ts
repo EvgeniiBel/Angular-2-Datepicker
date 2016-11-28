@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 
-import { Calendar } from './calendar';
+import { Calendar } from '../services/calendar-creator';
 
 interface DateFormatFunction {
   (date: Date): string;
@@ -185,14 +185,11 @@ interface ValidationResult {
         display: inline-block;
         width: 6em;
         padding: 2px 4px;
+        outline: 0;
         border: 1px solid #dadada;
         border-radius: 2px;
         font-size: 1em;
         transition: 0.32s;
-      }
-
-      .datepicker__calendar__nav__header__month-dropdown__input:focus {
-        outline: 0;
       }
 
       .datepicker__calendar__nav__header__month-dropdown__month {
@@ -215,22 +212,19 @@ interface ValidationResult {
         display: inline-block;
         width: 3em;
         padding: 2px 4px;
+        outline: 0;
         border: 1px solid #ffffff;
         border-radius: 2px;
         font-size: 1em;
         transition: 0.32s;
       }
 
-      datepicker__calendar__nav__header__year-input:focus.ng-invalid {
+      .datepicker__calendar__nav__header__year-input:focus.ng-invalid {
         border: 1px solid #e82525;
       }
 
-      datepicker__calendar__nav__header__year-input:focus.ng-valid {
+      .datepicker__calendar__nav__header__year-input:focus.ng-valid {
         border: 1px solid #13ad13;
-      }
-
-      datepicker__calendar__nav__header__year-input:focus {
-        outline: 0;
       }
 
       .datepicker__input {
@@ -289,6 +283,7 @@ interface ValidationResult {
                 [placeholder]="currentMonth"
                 [formControl]="monthControl"
                 (keyup.enter)="monthInput.blur()"
+                (blur)="onMonthSubmit()"
                 (focus)="onMonthInputFocus()"
               />
               <div *ngIf="showMonthSelector">
@@ -637,7 +632,6 @@ export class DatepickerComponent implements OnInit, OnChanges {
   *
   */
   onMonthInputFocus(): void {
-    console.log('hit');
     this.monthControl.reset();
   }
 
@@ -645,6 +639,13 @@ export class DatepickerComponent implements OnInit, OnChanges {
   * Changes the month of the calendar
   */
   onMonthSelect(month: string): void {
+
+  }
+
+  /**
+  *
+  */
+  onMonthSubmit(): void {
 
   }
 
