@@ -38,6 +38,7 @@ interface ValidationResult {
     `.angular2-material-datepicker {
         position: relative;
         display: inline-block;
+        box-sizing: border-box;
         color: #2b2b2b;
         font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Calibri', 'Roboto';
       }
@@ -171,7 +172,46 @@ interface ValidationResult {
         margin: 0;
       }
 
-      .datepicker__calendar__nav__header__year {
+      .datepicker__calendar__nav__header__month-dropdown {
+        position: relative;
+        display: inline;
+        max-height: 10em;
+        overflow: auto;
+        border-radius: 2px;
+        background-color: #ffffff;
+      }
+
+      .datepicker__calendar__nav__header__month-dropdown__input {
+        display: inline-block;
+        width: 6em;
+        padding: 2px 4px;
+        border: 1px solid #dadada;
+        border-radius: 2px;
+        font-size: 1em;
+        transition: 0.32s;
+      }
+
+      .datepicker__calendar__nav__header__month-dropdown__input:focus {
+        outline: 0;
+      }
+
+      .datepicker__calendar__nav__header__month-dropdown__month {
+        padding: 8px 10px;
+        text-align: left;
+        transition: 0.32s;
+        cursor: pointer;
+      }
+
+      .datepicker__calendar__nav__header__month-dropdown__month:hover {
+        background-color: rgb(243,243,243);
+      }
+
+      .datepicker__calendar__nav__header__month-dropdown__month--active {
+        background-color: rgb(248,248,248);
+        font-weight: bold;
+      }
+
+      .datepicker__calendar__nav__header__year-input {
         display: inline-block;
         width: 3em;
         padding: 2px 4px;
@@ -181,16 +221,16 @@ interface ValidationResult {
         transition: 0.32s;
       }
 
-      .datepicker__calendar__nav__header__year:focus.ng-invalid {
+      datepicker__calendar__nav__header__year-input:focus.ng-invalid {
         border: 1px solid #e82525;
       }
 
-      .datepicker__calendar__nav__header__year:focus.ng-valid {
+      datepicker__calendar__nav__header__year-input:focus.ng-valid {
         border: 1px solid #13ad13;
       }
 
-      .datepicker__calendar__nav__header__year:focus {
-        outline: none;
+      datepicker__calendar__nav__header__year-input:focus {
+        outline: 0;
       }
 
       .datepicker__input {
@@ -240,10 +280,31 @@ interface ValidationResult {
           </svg>
           </div>
           <div class="datepicker__calendar__nav__header">
-            <span>{{ currentMonth }}</span>
+            <div
+              class="datepicker__calendar__nav__header__month-dropdown"
+            >
+              <input
+                #monthInput
+                class="datepicker__calendar__nav__header__month-dropdown__input"
+                [placeholder]="currentMonth"
+                [formControl]="monthControl"
+                (keyup.enter)="monthInput.blur()"
+                (focus)="onMonthInputFocus()"
+              />
+              <div *ngIf="showMonthSelector">
+                <div
+                  class="datepicker__calendar__nav__header__month-dropdown__month"
+                  [ngClass]="{'datepicker__calendar__nav__header__month-dropdown__month--active': month === currentMonth}"
+                  *ngFor="let month of months"
+                  (click)="onMonthSelect(month)"
+                >
+                  {{ month }}
+                </div>
+              </div>
+            </div>
             <input
               #yearInput
-              class="datepicker__calendar__nav__header__year"
+              class="datepicker__calendar__nav__header__year-input"
               placeholder="Year"
               [formControl]="yearControl"
               (keyup.enter)="yearInput.blur()"
@@ -334,6 +395,7 @@ export class DatepickerComponent implements OnInit, OnChanges {
   @Input() inputText: string;
   // view logic
   @Input() showCalendar: boolean;
+  @Input() showMonthSelector: boolean;
   // events
   @Output() onSelect = new EventEmitter<Date>();
   // time
@@ -352,6 +414,7 @@ export class DatepickerComponent implements OnInit, OnChanges {
   // listeners
   clickListener: Function;
   // forms
+  monthControl: FormControl;
   yearControl: FormControl;
 
 
@@ -359,6 +422,7 @@ export class DatepickerComponent implements OnInit, OnChanges {
     this.dateFormat = 'YYYY-MM-DD';
     // view logic
     this.showCalendar = false;
+    this.showMonthSelector = false;
     // colors
     this.colors = {
       'black': '#333333',
@@ -382,6 +446,7 @@ export class DatepickerComponent implements OnInit, OnChanges {
       (event: MouseEvent) => this.handleGlobalClick(event)
     );
     // form controls
+    this.monthControl = new FormControl('', Validators.required);
     this.yearControl = new FormControl('', Validators.compose([
       Validators.required,
       Validators.maxLength(4),
@@ -426,6 +491,7 @@ export class DatepickerComponent implements OnInit, OnChanges {
     this.currentMonth = this.months[this.currentMonthNumber];
 
     this.currentYear = date.getFullYear();
+    this.monthControl.setValue(this.currentMonth);
     this.yearControl.setValue(this.currentYear);
 
     const calendarArray = this.calendar.monthDays(this.currentYear, this.currentMonthNumber);
@@ -450,6 +516,7 @@ export class DatepickerComponent implements OnInit, OnChanges {
   */
   setCurrentMonth(monthNumber: number): void {
     this.currentMonth = this.months[monthNumber];
+    this.monthControl.setValue(this.currentMonth);
     const calendarArray = this.calendar.monthDays(this.currentYear, this.currentMonthNumber);
     this.calendarDays = [].concat.apply([], calendarArray);
   }
@@ -557,6 +624,28 @@ export class DatepickerComponent implements OnInit, OnChanges {
   */
   onInputClick(): void {
     this.showCalendar = !this.showCalendar;
+  }
+
+  /**
+  * Toggles the month selector
+  */
+  onMonthClick(): void {
+    this.showMonthSelector = !this.showMonthSelector;
+  }
+
+  /**
+  *
+  */
+  onMonthInputFocus(): void {
+    console.log('hit');
+    this.monthControl.reset();
+  }
+
+  /**
+  * Changes the month of the calendar
+  */
+  onMonthSelect(month: string): void {
+
   }
 
   /**
@@ -683,10 +772,13 @@ export class DatepickerComponent implements OnInit, OnChanges {
 
   /**
   * Validates that a value is a number greater than or equal to 1970
+  * and less than 2100
   */
   yearValidator(control: FormControl): ValidationResult {
     const value = control.value;
-    const valid = !isNaN(value) && value >= 1970 && Math.floor(value) === +value;
+    // make sure number is below 2100 because '2e14' is a valid javascript number
+    // also make sure number is an integer
+    const valid = !isNaN(value) && value >= 1970 && value <= 2100 && Math.floor(value) === +value;
     if (valid) {
       return null;
     }
